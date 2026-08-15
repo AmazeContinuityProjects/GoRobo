@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { createPortal } from "react-dom"
-import { Hash, IndianRupee, MessageCircle, PackageCheck, Tag, X } from "lucide-react"
+import { Hash, IndianRupee, MessageCircle, PackageCheck, Tag } from "lucide-react"
 import {
   Alert,
   Badge,
@@ -12,10 +11,12 @@ import {
   InfoRow,
   Input,
   Label,
+  Modal,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
+  Text,
   Textarea,
 } from "@amazecontinuityprojects/amazeui"
 import { formatINR, type Product } from "@/lib/products"
@@ -28,13 +29,10 @@ type ProductDialogProps = {
 }
 
 export function ProductDialog({ product, open, onOpenChange }: ProductDialogProps) {
-  const [mounted, setMounted] = useState(false)
   const [name, setName] = useState("")
   const [qty, setQty] = useState("1")
   const [note, setNote] = useState("")
   const [agree, setAgree] = useState(false)
-
-  useEffect(() => setMounted(true), [])
 
   // Reset the form each time a new product is opened.
   useEffect(() => {
@@ -46,22 +44,7 @@ export function ProductDialog({ product, open, onOpenChange }: ProductDialogProp
     }
   }, [open, product?.id])
 
-  // Close on Escape + lock body scroll while open.
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenChange(false)
-    }
-    document.addEventListener("keydown", onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.removeEventListener("keydown", onKey)
-      document.body.style.overflow = prev
-    }
-  }, [open, onOpenChange])
-
-  if (!mounted || !open || !product) return null
+  if (!open || !product) return null
 
   const submit = () => {
     const url = buildInquiryUrl(product, {
@@ -73,21 +56,15 @@ export function ProductDialog({ product, open, onOpenChange }: ProductDialogProp
     onOpenChange(false)
   }
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${product.name} details`}
+  return (
+    <Modal
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
+      maxWidth="max-w-2xl"
+      noPadding
+      className="overflow-hidden"
     >
-      <button
-        type="button"
-        aria-label="Close dialog"
-        onClick={() => onOpenChange(false)}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-      />
-
-      <div className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-background p-6 shadow-2xl">
+      <div className="max-h-[90vh] overflow-y-auto p-6">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
             <h2 className="text-pretty text-base font-semibold text-foreground">{product.name}</h2>
@@ -97,14 +74,6 @@ export function ProductDialog({ product, open, onOpenChange }: ProductDialogProp
               </Badge>
             </span>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onOpenChange(false)}
-            aria-label="Close dialog"
-          >
-            <X className="size-4" aria-hidden="true" />
-          </Button>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
@@ -128,6 +97,11 @@ export function ProductDialog({ product, open, onOpenChange }: ProductDialogProp
               </TabsList>
 
               <TabsContent value="details" className="mt-4 flex flex-col gap-3">
+                {product.description && (
+                  <Text className="text-sm leading-relaxed text-muted-foreground">
+                    {product.description}
+                  </Text>
+                )}
                 <div className="flex items-baseline gap-2">
                   <span className="font-mono text-2xl font-semibold text-card-foreground">
                     {formatINR(product.price)}
@@ -206,7 +180,6 @@ export function ProductDialog({ product, open, onOpenChange }: ProductDialogProp
           </Button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </Modal>
   )
 }

@@ -4,7 +4,7 @@ import { formatINR, type Product } from "@/lib/products"
 // WhatsApp number in international format (91 = India), digits only, no "+"
 export const WHATSAPP_NUMBER = "919150474495"
 export const CONTACT_PHONE = "+91 91504 74495"
-export const CONTACT_EMAIL = "goroboservices@gmail.com"
+export const CONTACT_EMAIL = "gorobo@amazecc.com"
 // WhatsApp channel to follow for updates & offers
 export const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029VbDkpaL1Hsq6J5aeQf2t"
 
@@ -34,4 +34,27 @@ export function buildGeneralInquiryUrl(): string {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     "Hi Go RoBo, I'd like to inquire about your products.",
   )}`
+}
+
+export type CartLine = { product: Product; qty: number }
+
+// Pre-filled WhatsApp message for a whole cart order.
+export function buildCartInquiryUrl(lines: CartLine[]): string {
+  const itemLines = lines.map(
+    ({ product, qty }) =>
+      `• ${product.name} × ${qty} — ${formatINR(product.price)} each (${formatINR(product.price * qty)})`,
+  )
+  const total = lines.reduce((sum, { product, qty }) => sum + product.price * qty, 0)
+  const text = [
+    "Hi Go RoBo, I'd like to order:",
+    "",
+    ...itemLines,
+    "",
+    `Total: ${formatINR(total)} (excl. tax)`,
+    "",
+    "Delivery: Buzz (instant, within 1 hr in Chennai) or Standard (1 day).",
+    "Please apply the flat 2% off offer.",
+    `Please share availability and details. (Ref email: ${CONTACT_EMAIL})`,
+  ].join("\n")
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
 }

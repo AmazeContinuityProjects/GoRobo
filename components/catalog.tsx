@@ -1,47 +1,52 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   ArrowUp,
+  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   Cpu,
+  GitFork,
+  Heart,
+  History,
+  Info,
   LayoutGrid,
   List,
+  ListFilter,
   Mail,
   MessageCircle,
-  Percent,
   Radio,
   SearchX,
-  Truck,
-  Zap,
 } from "lucide-react"
 import {
-  Alert,
   Badge,
-  Breadcrumbs,
   Button,
   EmptyState,
   FabSpeedDial,
   IconBadge,
   Label,
-  OptionPicker,
   PageHeader,
   ProgressBar,
   SearchInput,
   SectionHeader,
-  Select,
   Skeleton,
   Switch,
   Text,
-  ThemeSwitcher,
   View,
   ViewModeToggle,
 } from "@amazecontinuityprojects/amazeui"
 import { ProductCard } from "@/components/product-card"
 import { ProductDialog } from "@/components/product-dialog"
-import { categories, products, type Product } from "@/lib/products"
+import { ResponsiveButton } from "@/components/responsive-button"
+import { ThemeSwitcher } from "@/components/theme-switcher"
+import { CartButton } from "@/components/cart-button"
+import { PromoStrip } from "@/components/promo-strip"
+import { useCatalog } from "@/components/catalog-context"
+import { type Product } from "@/lib/products"
 import { CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_CHANNEL_URL, buildGeneralInquiryUrl } from "@/lib/contact"
+import { GITHUB_REPO_URL } from "@/lib/site"
 
 const PAGE_SIZE = 12
 
@@ -55,8 +60,9 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ]
 
 export function Catalog() {
+  const router = useRouter()
+  const { activeCategory, setActiveCategory, items } = useCatalog()
   const [query, setQuery] = useState("")
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [sort, setSort] = useState<SortKey>("featured")
   const [view, setView] = useState<"grid" | "list">("grid")
   const [inStockOnly, setInStockOnly] = useState(false)
@@ -64,6 +70,13 @@ export function Catalog() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Product | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [sortOpen, setSortOpen] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+
+  const itemCategories = useMemo(
+    () => Array.from(new Set(items.map((p) => p.category))).sort(),
+    [items]
+  )
 
   // Brief skeleton on first mount to showcase loading state.
   useEffect(() => {
@@ -73,7 +86,7 @@ export function Catalog() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const list = products.filter((p) => {
+    const list = items.filter((p) => {
       const matchesQuery = q === "" || p.name.toLowerCase().includes(q)
       const matchesCategory = activeCategory === null || p.category === activeCategory
       const matchesStock = !inStockOnly || p.inStock
@@ -90,7 +103,7 @@ export function Catalog() {
       default:
         return list
     }
-  }, [query, activeCategory, inStockOnly, sort])
+  }, [query, activeCategory, inStockOnly, sort, items])
 
   useEffect(() => {
     setPage(1)
@@ -102,15 +115,7 @@ export function Catalog() {
   const paged = filtered.slice(start, start + PAGE_SIZE)
   const shownCount = Math.min(start + PAGE_SIZE, filtered.length)
 
-  const countFor = (category: string) => products.filter((p) => p.category === category).length
-
-  const categoryOptions = useMemo(
-    () => [
-      { value: "__all__", label: `All Categories (${products.length})` },
-      ...categories.map((c) => ({ value: c, label: `${c} (${countFor(c)})` })),
-    ],
-    [],
-  )
+  const countFor = (category: string) => items.filter((p) => p.category === category).length
 
   const openProduct = (p: Product) => {
     setSelected(p)
@@ -125,17 +130,9 @@ export function Catalog() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6">
-          <Breadcrumbs
-            items={[
-              { label: "Home", href: "#" },
-              { label: "Shop", href: "#" },
-              { label: activeCategory ?? "All Components", active: true },
-            ]}
-          />
-
+    <div>
+      <header className="bg-background">
+        <div className="flex flex-col gap-4 px-4 pt-2 pb-4 sm:px-6 sm:mr-8">
           <PageHeader
             icon={
               <IconBadge color="emerald" size="md">
@@ -146,10 +143,10 @@ export function Catalog() {
             meta={
               <div className="flex items-center gap-2">
                 <Badge variant="info" size="sm">
-                  {products.length} components
+                  {items.length} components
                 </Badge>
                 <Badge variant="purple" size="sm">
-                  {categories.length} categories
+                  {itemCategories.length} categories
                 </Badge>
                 <span className="hidden text-sm text-muted-foreground sm:inline">
                   Robotics &amp; DIY Electronics
@@ -159,26 +156,21 @@ export function Catalog() {
             actions={
               <div className="flex items-center gap-2">
                 <ThemeSwitcher />
-                <Button
-                  size="sm"
-                  className="gap-1.5 whitespace-nowrap"
-                  aria-label={`Chat with Go RoBo on WhatsApp at ${CONTACT_PHONE}`}
-                  title={CONTACT_PHONE}
-                  onClick={() => window.open(buildGeneralInquiryUrl(), "_blank", "noopener,noreferrer")}
-                >
-                  <MessageCircle className="size-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">WhatsApp</span>
-                  <span className="sm:hidden">Chat</span>
-                </Button>
+                <CartButton />
+                <ResponsiveButton
+                  icon={<Radio className="size-4 shrink-0" aria-hidden="true" />}
+                  label="Channel"
+                  aria-label="Join the Go RoBo channel for updates and offers"
+                  onClick={() => window.open(WHATSAPP_CHANNEL_URL, "_blank", "noopener,noreferrer")}
+                />
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="gap-1.5 whitespace-nowrap"
-                  aria-label="Join the Go RoBo WhatsApp channel"
-                  onClick={() => window.open(WHATSAPP_CHANNEL_URL, "_blank", "noopener,noreferrer")}
+                  size="icon-sm"
+                  aria-label="Open Source on GitFork"
+                  title="Open Source on GitFork"
+                  onClick={() => window.open(GITHUB_REPO_URL, "_blank", "noopener,noreferrer")}
                 >
-                  <Radio className="size-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Join Channel</span>
+                  <GitFork className="size-4" aria-hidden="true" />
                 </Button>
                 <Button
                   variant="outline"
@@ -192,74 +184,11 @@ export function Catalog() {
             }
           />
 
-          <SearchInput
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search products by title..."
-            aria-label="Search products by title"
-          />
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        <Alert variant="success" className="mb-4 text-xs">
-          <span className="font-semibold">Limited-time offer:</span> Get a flat 2% off on every order &mdash; discount
-          applied automatically at checkout.
-        </Alert>
-
-        <View className="mb-4 flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <IconBadge color="emerald" size="md">
-              <Radio className="size-5" aria-hidden="true" />
-            </IconBadge>
-            <div>
-              <Text className="text-sm font-semibold text-foreground">Join our WhatsApp Channel</Text>
-              <Text className="text-xs text-muted-foreground">
-                Follow Go RoBo for new arrivals, offers &amp; restock alerts.
-              </Text>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            className="gap-1.5 whitespace-nowrap"
-            onClick={() => window.open(WHATSAPP_CHANNEL_URL, "_blank", "noopener,noreferrer")}
-          >
-            <Radio className="size-4" aria-hidden="true" />
-            Join Channel
-          </Button>
-        </View>
-
-        <div className="mb-5 grid gap-3 sm:grid-cols-3">
-          <DeliveryCard
-            icon={<Zap className="size-5" aria-hidden="true" />}
-            color="amber"
-            title="Buzz"
-            detail="Instant delivery within 1 hour in Chennai"
-            badge="1 hr · Chennai"
-            badgeVariant="warning"
-          />
-          <DeliveryCard
-            icon={<Truck className="size-5" aria-hidden="true" />}
-            color="blue"
-            title="Standard Delivery"
-            detail="Delivered within 1 day"
-            badge="1 day"
-            badgeVariant="info"
-          />
-          <DeliveryCard
-            icon={<Percent className="size-5" aria-hidden="true" />}
-            color="emerald"
-            title="2% Off"
-            detail="Flat discount on all orders"
-            badge="Save 2%"
-            badgeVariant="success"
-          />
-        </div>
-
-        <Alert variant="warning" className="mb-5 text-xs">
-          All prices shown are excluding tax. Final invoice adds applicable GST.
-        </Alert>
+      <main className="px-4 pt-0 pb-6 sm:px-6 sm:mr-8">
+        <PromoStrip />
 
         <SectionHeader
           title="Browse Components"
@@ -276,41 +205,94 @@ export function Catalog() {
           }
         />
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="flex flex-col gap-1.5 sm:w-64">
-            <Label>Category</Label>
-            <OptionPicker
-              value={activeCategory ?? "__all__"}
-              onChange={(v) => setActiveCategory(v === "__all__" ? null : v)}
-              options={categoryOptions}
-              placeholder="All Categories"
-              searchable
+        <div className="mt-4 flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <SearchInput
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search products by title..."
+              aria-label="Search products by title"
             />
           </div>
-          <div className="flex flex-col gap-1.5 sm:w-56">
-            <Select
-              label="Sort by"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              options={SORT_OPTIONS}
-            />
-          </div>
-          <div className="flex items-center gap-2 sm:ml-auto sm:pb-2">
-            <Switch checked={inStockOnly} onCheckedChange={setInStockOnly} />
-            <Label className="cursor-pointer" onClick={() => setInStockOnly((v) => !v)}>
-              In stock only
-            </Label>
-          </div>
+          <FilterMenu
+            open={sortOpen}
+            onOpenChange={setSortOpen}
+            icon={<ArrowUpDown className="size-4" aria-hidden="true" />}
+            label="Sort products"
+            active={sort !== "featured"}
+          >
+            <div className="flex flex-col gap-1.5">
+              <Label>Sort by</Label>
+              <div className="-mx-1 flex flex-col gap-1 px-1">
+                {SORT_OPTIONS.map((option) => (
+                  <MenuOption
+                    key={option.value}
+                    active={sort === option.value}
+                    label={option.label}
+                    onClick={() => {
+                      setSort(option.value)
+                      setSortOpen(false)
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </FilterMenu>
+          <FilterMenu
+            open={filterOpen}
+            onOpenChange={setFilterOpen}
+            icon={<ListFilter className="size-4" aria-hidden="true" />}
+            label="Filter by category"
+            active={activeCategory !== null || inStockOnly}
+            className="w-80"
+          >
+            <div className="flex flex-col gap-1.5">
+              <Label>Category</Label>
+              <div className="-mx-1 flex max-h-64 flex-col gap-1 overflow-y-auto px-1">
+                <MenuOption
+                  active={activeCategory === null}
+                  label="All Categories"
+                  count={items.length}
+                  onClick={() => {
+                    setActiveCategory(null)
+                    setFilterOpen(false)
+                  }}
+                />
+                {itemCategories.map((category) => (
+                  <MenuOption
+                    key={category}
+                    active={activeCategory === category}
+                    label={category}
+                    count={countFor(category)}
+                    onClick={() => {
+                      setActiveCategory(category)
+                      setFilterOpen(false)
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+                <Switch checked={inStockOnly} onCheckedChange={setInStockOnly} />
+                <Label className="cursor-pointer" onClick={() => setInStockOnly((v) => !v)}>
+                  In stock only
+                </Label>
+              </div>
+            </div>
+          </FilterMenu>
         </div>
 
-        <nav aria-label="Filter by category" className="mt-5 flex flex-wrap gap-2">
+        {/*
+          Mobile-only category chips (disabled: the category filter icon in the
+          search row covers filtering on every platform).
+        <nav aria-label="Filter by category" className="mt-5 flex flex-wrap gap-2 md:hidden">
           <CategoryChip
             active={activeCategory === null}
             onClick={() => setActiveCategory(null)}
             label="All"
-            count={products.length}
+            count={items.length}
           />
-          {categories.map((category) => (
+          {itemCategories.map((category) => (
             <CategoryChip
               key={category}
               active={activeCategory === category}
@@ -320,6 +302,7 @@ export function Catalog() {
             />
           ))}
         </nav>
+        */}
 
         <div className="my-5 h-px bg-border" role="separator" />
 
@@ -347,7 +330,7 @@ export function Catalog() {
             </div>
 
             {view === "grid" ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {paged.map((product) => (
                   <ProductCard key={product.id} product={product} view="grid" onView={openProduct} />
                 ))}
@@ -379,7 +362,46 @@ export function Catalog() {
 
         <div className="my-8 h-px bg-border" role="separator" />
 
-        <View className="flex flex-col items-center gap-2 py-4 text-center">
+        <nav aria-label="Site pages" className="mb-8 flex flex-wrap items-center justify-start gap-3 md:hidden">
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="About"
+            title="About"
+            onClick={() => router.push("/about")}
+          >
+            <Info className="size-5" aria-hidden="true" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Hall of Fame"
+            title="Hall of Fame"
+            onClick={() => router.push("/hall-of-fame")}
+          >
+            <Heart className="size-5" aria-hidden="true" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Changelog"
+            title="Changelog"
+            onClick={() => router.push("/changelog")}
+          >
+            <History className="size-5" aria-hidden="true" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Open Source on GitHub"
+            title="Open Source on GitHub"
+            onClick={() => window.open(GITHUB_REPO_URL, "_blank", "noopener,noreferrer")}
+          >
+            <GitFork className="size-5" aria-hidden="true" />
+          </Button>
+        </nav>
+
+        <View className="flex flex-col items-center gap-2 py-4 pb-24 text-center sm:pb-4">
           <Text className="text-sm font-medium text-foreground">Go RoBo &mdash; Robotics &amp; DIY Electronics</Text>
           <Text className="text-xs text-muted-foreground">
             {CONTACT_PHONE} &middot; {CONTACT_EMAIL}
@@ -422,36 +444,76 @@ export function Catalog() {
   )
 }
 
-function DeliveryCard({
+function FilterMenu({
+  open,
+  onOpenChange,
   icon,
-  color,
-  title,
-  detail,
-  badge,
-  badgeVariant,
+  label,
+  active,
+  className,
+  children,
 }: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
   icon: React.ReactNode
-  color: React.ComponentProps<typeof IconBadge>["color"]
-  title: string
-  detail: string
-  badge: string
-  badgeVariant: React.ComponentProps<typeof Badge>["variant"]
+  label: string
+  active: boolean
+  className?: string
+  children: React.ReactNode
 }) {
   return (
-    <View className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-      <IconBadge color={color} size="md">
+    <div className="relative">
+      <Button
+        variant={active ? "primary" : "outline"}
+        size="icon-sm"
+        aria-label={label}
+        title={label}
+        aria-expanded={open}
+        onClick={() => onOpenChange(!open)}
+      >
         {icon}
-      </IconBadge>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <Text className="truncate text-sm font-semibold text-foreground">{title}</Text>
-          <Badge variant={badgeVariant} size="sm">
-            {badge}
-          </Badge>
-        </div>
-        <Text className="text-xs text-muted-foreground">{detail}</Text>
-      </div>
-    </View>
+      </Button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" aria-hidden="true" onClick={() => onOpenChange(false)} />
+          <View
+            className={`absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-md ${className ?? ""}`}
+          >
+            {children}
+          </View>
+        </>
+      )}
+    </div>
+  )
+}
+
+function MenuOption({
+  active,
+  onClick,
+  label,
+  count,
+}: {
+  active: boolean
+  onClick: () => void
+  label: string
+  count?: number
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
+        active ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"
+      }`}
+    >
+      <span className="truncate">{label}</span>
+      {count !== undefined && (
+        <Badge variant={active ? "success" : "default"} size="sm">
+          {count}
+        </Badge>
+      )}
+    </button>
   )
 }
 
@@ -487,7 +549,7 @@ function CategoryChip({
 
 function SkeletonGrid() {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="flex flex-col gap-3 rounded-lg border border-border p-4">
           <Skeleton className="aspect-square w-full rounded-md" />

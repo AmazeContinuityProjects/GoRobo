@@ -1,6 +1,6 @@
 "use client"
 
-import { Eye, MessageCircle } from "lucide-react"
+import { Eye, ShoppingCart } from "lucide-react"
 import {
   Badge,
   Button,
@@ -10,8 +10,9 @@ import {
   CardTitle,
   Image,
 } from "@amazecontinuityprojects/amazeui"
+import { ResponsiveButton } from "@/components/responsive-button"
+import { useCart } from "@/components/cart-context"
 import { formatINR, type Product } from "@/lib/products"
-import { buildInquiryUrl } from "@/lib/contact"
 
 type ProductCardProps = {
   product: Product
@@ -20,7 +21,7 @@ type ProductCardProps = {
 }
 
 export function ProductCard({ product, view = "grid", onView }: ProductCardProps) {
-  const whatsappUrl = buildInquiryUrl(product)
+  const { addItem } = useCart()
 
   if (view === "list") {
     return (
@@ -50,16 +51,21 @@ export function ProductCard({ product, view = "grid", onView }: ProductCardProps
               <p className="font-mono text-lg font-semibold text-card-foreground">
                 {formatINR(product.price)}
               </p>
-              <p className="text-[10px] text-muted-foreground">excl. tax</p>
+              <p className="text-xs text-muted-foreground">excl. tax</p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon-sm" onClick={() => onView?.(product)} aria-label={`Quick view ${product.name}`}>
                 <Eye className="size-4" aria-hidden="true" />
               </Button>
-              <Button size="sm" className="gap-1.5" onClick={() => window.open(whatsappUrl, "_blank", "noopener,noreferrer")}>
-                <MessageCircle className="size-4" aria-hidden="true" />
-                Inquire
-              </Button>
+<ResponsiveButton
+                icon={<ShoppingCart className="size-4 shrink-0" aria-hidden="true" />}
+                label="Add to Cart"
+                disabled={!product.inStock}
+                onClick={() => addItem(product)}
+                collapseBelow="sm"
+                className="w-full"
+                variant="primary"
+              />
             </div>
           </div>
         </div>
@@ -102,7 +108,7 @@ export function ProductCard({ product, view = "grid", onView }: ProductCardProps
             <p className="font-mono text-lg font-semibold text-card-foreground">
               {formatINR(product.price)}
             </p>
-            <p className="text-[10px] text-muted-foreground">excl. tax</p>
+            <p className="text-xs text-muted-foreground">excl. tax</p>
             <span className="mt-1 inline-flex">
               <Badge variant={product.inStock ? "success" : "danger"} size="sm">
                 {product.inStock ? "In Stock" : "Out of Stock"}
@@ -113,14 +119,15 @@ export function ProductCard({ product, view = "grid", onView }: ProductCardProps
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button
-          size="sm"
-          className="w-full gap-1.5"
-          onClick={() => window.open(whatsappUrl, "_blank", "noopener,noreferrer")}
-        >
-          <MessageCircle className="size-4" aria-hidden="true" />
-          Inquire / Add to List
-        </Button>
+<ResponsiveButton
+                icon={<ShoppingCart className="size-4 shrink-0" aria-hidden="true" />}
+                label={product.inStock ? "Add to Cart" : "Out of Stock"}
+                disabled={!product.inStock}
+                onClick={() => addItem(product)}
+                collapseBelow="sm"
+                className="w-full"
+                variant="primary"
+              />
       </CardFooter>
     </Card>
   )
