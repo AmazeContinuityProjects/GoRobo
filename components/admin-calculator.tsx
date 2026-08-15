@@ -65,7 +65,7 @@ export function AdminCalculator({
   const lines = useMemo(() => Object.values(cart), [cart])
 
   const totals = useMemo(() => {
-    const subtotal = lines.reduce((sum, l) => sum + l.product.baseCost * l.qty, 0)
+    const subtotal = lines.reduce((sum, l) => sum + l.product.price * l.qty, 0)
     const itemCount = lines.reduce((sum, l) => sum + l.qty, 0)
     const discount = applyDiscount ? subtotal * DISCOUNT_RATE : 0
     const taxable = subtotal - discount
@@ -138,7 +138,7 @@ export function AdminCalculator({
       <main className="mx-auto max-w-6xl px-4 py-6">
         <PageHeader
           title="Cost Calculator"
-          meta={<Text className="text-sm text-muted-foreground">Add products to the cart to calculate base-cost totals.</Text>}
+          meta={<Text className="text-sm text-muted-foreground">Add products to the cart to calculate order totals at store prices.</Text>}
         />
 
         <Alert variant="info" className="mb-5 mt-4 text-xs">
@@ -194,7 +194,7 @@ export function AdminCalculator({
                           <Text className="truncate text-sm font-medium text-foreground">{p.name}</Text>
                           <div className="mt-0.5 flex items-center gap-2">
                             <Text className="text-xs text-muted-foreground">{p.category}</Text>
-                            <Text className="text-xs font-semibold text-foreground">{formatINR(p.baseCost)}</Text>
+                            <Text className="text-xs font-semibold text-foreground">{formatINR(p.price)}</Text>
                           </div>
                         </div>
                         <Button size="sm" className="gap-1.5 whitespace-nowrap" onClick={() => addToCart(p)}>
@@ -270,7 +270,7 @@ export function AdminCalculator({
                             </Button>
                           </div>
                           <Text className="text-sm font-semibold text-foreground">
-                            {formatINR(product.baseCost * qty)}
+                            {formatINR(product.price * qty)}
                           </Text>
                         </div>
                       </View>
