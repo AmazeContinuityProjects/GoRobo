@@ -2,13 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Cpu } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import { Button, Input, Label, Card } from '@amazecontinuityprojects/amazeui'
 
 export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
-  const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -26,15 +24,17 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       ? await authClient.signUp.email({ email, password, name })
       : await authClient.signIn.email({ email, password })
 
-    setLoading(false)
-
     if (error) {
+      setLoading(false)
       setError(error.message ?? 'Something went wrong')
       return
     }
 
-    router.push('/admin')
-    router.refresh()
+    // Full-page navigation (not router.push) so the browser makes a fresh
+    // document request that reliably carries the just-set session cookie.
+    // In the cross-site preview iframe an RSC fetch can miss the new cookie
+    // and bounce back to the auth page, so we force a hard redirect here.
+    window.location.assign('/admin')
   }
 
   return (
