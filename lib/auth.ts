@@ -15,7 +15,14 @@ export const auth = betterAuth({
     autoSignIn: true,
   },
   trustedOrigins: [
-    ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
+    // Local dev
+    'http://localhost:3000',
+    // v0 preview is served through proxy hosts that vary per session
+    // (e.g. *.vercel.run sandboxes and *.v0.build preview URLs), so match
+    // them with wildcards instead of a single exact origin.
+    'https://*.v0.build',
+    'https://*.vercel.run',
+    'https://*.vercel.app',
     ...(process.env.V0_DEV_APP_URL ? [process.env.V0_DEV_APP_URL] : []),
     ...(process.env.V0_RUNTIME_URL ? [process.env.V0_RUNTIME_URL] : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
