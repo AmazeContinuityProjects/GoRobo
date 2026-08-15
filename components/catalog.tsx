@@ -384,6 +384,12 @@ export function Catalog() {
           <Text className="text-xs text-muted-foreground">
             {CONTACT_PHONE} &middot; {CONTACT_EMAIL}
           </Text>
+          <a
+            href="/admin"
+            className="mt-1 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Staff Login
+          </a>
         </View>
       </main>
 

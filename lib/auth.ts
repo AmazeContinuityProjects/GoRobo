@@ -15,6 +15,7 @@ export const auth = betterAuth({
     autoSignIn: true,
   },
   trustedOrigins: [
+    ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
     ...(process.env.V0_DEV_APP_URL ? [process.env.V0_DEV_APP_URL] : []),
     ...(process.env.V0_RUNTIME_URL ? [process.env.V0_RUNTIME_URL] : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),

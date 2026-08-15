@@ -3,6 +3,8 @@ export type Product = {
   name: string
   category: string
   price: number
+  /** Raw supplier cost before margin (used by the admin calculator). */
+  baseCost: number
   image: string
   inStock: boolean
 }
@@ -369,6 +371,7 @@ export const products: Product[] = raw.map((p, i) => ({
   name: p.name,
   category: p.category,
   price: applyMargin(p.price),
+  baseCost: p.price,
   image: p.image,
   inStock: p.inStock !== false,
 }))

@@ -3,11 +3,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Cpu } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card } from '@/components/ui/card'
+import { Button, Input, Label, Card } from '@amazecontinuityprojects/amazeui'
 
 export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const router = useRouter()
@@ -35,21 +33,24 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       return
     }
 
-    router.push('/')
+    router.push('/admin')
     router.refresh()
   }
 
   return (
     <main className="min-h-svh bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-sm p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {isSignUp ? 'Create an account' : 'Welcome back'}
+        <div className="mb-6 flex flex-col items-center text-center">
+          <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Cpu className="size-6" aria-hidden="true" />
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
+            {isSignUp ? 'Create admin account' : 'Go RoBo Admin'}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1 text-pretty">
             {isSignUp
-              ? 'Sign up to get started'
-              : 'Sign in to your account to continue'}
+              ? 'Register a staff account for the cost calculator'
+              : 'Sign in to access the cost calculator'}
           </p>
         </div>
 
@@ -106,12 +107,18 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         </form>
 
         <p className="text-sm text-muted-foreground text-center mt-6">
-          {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+          {isSignUp ? 'Already have an account? ' : "Need a staff account? "}
           <Link
-            href={isSignUp ? '/sign-in' : '/sign-up'}
+            href={isSignUp ? '/admin/sign-in' : '/admin/sign-up'}
             className="text-foreground font-medium underline-offset-4 hover:underline"
           >
             {isSignUp ? 'Sign in' : 'Sign up'}
+          </Link>
+        </p>
+
+        <p className="text-xs text-muted-foreground text-center mt-4">
+          <Link href="/" className="underline-offset-4 hover:underline">
+            &larr; Back to storefront
           </Link>
         </p>
       </Card>
