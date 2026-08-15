@@ -25,6 +25,7 @@ import {
   Package,
   Plane,
   Radio,
+  ShoppingCart,
   Sparkles,
   Tag,
   ToggleLeft,
@@ -56,6 +57,8 @@ import {
 } from "@/lib/contact"
 import { GITHUB_REPO_URL } from "@/lib/site"
 import { animateThemeCircularExpansion } from "@/components/theme-switcher"
+import { GoRoboLogo } from "@/components/gorobo-logo"
+import { useCart } from "@/components/cart-context"
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "Arduino Boards": Cpu,
@@ -93,14 +96,9 @@ function SidebarLogo() {
       type="button"
       onClick={() => router.push("/")}
       aria-label="Go RoBo — back to the catalog"
-      className="flex cursor-pointer items-center gap-2.5 rounded-xl text-left transition-opacity hover:opacity-80"
+      className="flex cursor-pointer items-center px-1 py-1 rounded-xl text-left transition-opacity hover:opacity-80"
     >
-      <IconBadge color="emerald" size="md">
-        <Cpu className="size-5" aria-hidden="true" />
-      </IconBadge>
-      <Text className="text-base font-bold tracking-tight text-sidebar-foreground">
-        Go&nbsp;RoBo
-      </Text>
+      <GoRoboLogo className="h-6 w-auto" />
     </button>
   )
 }
@@ -158,6 +156,7 @@ export function SiteSidebar({
   const { theme, setTheme } = useTheme()
   const router = useRouter()
   const pathname = usePathname()
+  const { count: cartCount } = useCart()
 
   const countFor = (category: string) =>
     products.filter((p) => p.category === category).length
@@ -179,8 +178,21 @@ export function SiteSidebar({
           <SidebarItem
             icon={<LayoutGrid className="size-5" aria-hidden="true" />}
             label="All Products"
-            isActive={activeCategory === null}
+            isActive={pathname === "/" && activeCategory === null}
             onClick={() => selectCategory(null)}
+          />
+          <SidebarItem
+            icon={<ShoppingCart className="size-5" aria-hidden="true" />}
+            label="Shopping Cart"
+            isActive={pathname === "/cart"}
+            rightElement={
+              cartCount > 0 ? (
+                <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              ) : undefined
+            }
+            onClick={() => router.push("/cart")}
           />
         </SidebarGroupRow>
 
@@ -255,7 +267,7 @@ export function SiteSidebar({
 
       <SidebarFooter className="rounded-b-[24px]">
         <SidebarFooterContent
-          theme={theme}
+          theme={theme ?? "dark"}
           onThemeChange={(next) => animateThemeCircularExpansion(null, next, setTheme)}
         />
       </SidebarFooter>

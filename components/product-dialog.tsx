@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Hash, IndianRupee, MessageCircle, PackageCheck, Tag } from "lucide-react"
+import { Hash, IndianRupee, MessageCircle, Minus, PackageCheck, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
 import {
   Alert,
   Badge,
@@ -21,6 +21,7 @@ import {
 } from "@amazecontinuityprojects/amazeui"
 import { formatINR, type Product } from "@/lib/products"
 import { buildInquiryUrl } from "@/lib/contact"
+import { useCart } from "@/components/cart-context"
 
 type ProductDialogProps = {
   product: Product | null
@@ -29,10 +30,14 @@ type ProductDialogProps = {
 }
 
 export function ProductDialog({ product, open, onOpenChange }: ProductDialogProps) {
+  const { items, addItem, setQty: setCartItemQty, removeItem } = useCart()
   const [name, setName] = useState("")
   const [qty, setQty] = useState("1")
   const [note, setNote] = useState("")
   const [agree, setAgree] = useState(false)
+
+  const cartItem = product ? items.find((i) => i.productId === product.id) : null
+  const cartQuantity = cartItem?.qty ?? 0
 
   // Reset the form each time a new product is opened.
   useEffect(() => {
@@ -132,6 +137,50 @@ export function ProductDialog({ product, open, onOpenChange }: ProductDialogProp
                 <Alert variant="info" className="mt-1 text-xs">
                   Final invoice adds applicable GST. Bulk pricing available on request.
                 </Alert>
+
+                <div className="mt-2 pt-3 border-t border-border">
+                  {cartQuantity === 0 ? (
+                    <Button
+                      className="w-full gap-2"
+                      variant="primary"
+                      disabled={!product.inStock}
+                      onClick={() => addItem(product, 1)}
+                    >
+                      <ShoppingCart className="size-4" aria-hidden="true" />
+                      {product.inStock ? "Add to Cart" : "Out of Stock"}
+                    </Button>
+                  ) : (
+                    <div className="flex h-10 w-full items-center justify-between rounded-xl border border-primary/30 bg-primary/10 px-2 py-1 text-primary shadow-xs dark:bg-primary/15 dark:border-primary/40">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (cartQuantity === 1) removeItem(product.id)
+                          else setCartItemQty(product.id, cartQuantity - 1)
+                        }}
+                        aria-label="Decrease quantity"
+                        className="flex size-8 items-center justify-center rounded-lg bg-background text-foreground shadow-xs transition-colors hover:bg-muted active:scale-90 cursor-pointer"
+                      >
+                        {cartQuantity === 1 ? (
+                          <Trash2 className="size-4 text-destructive" aria-hidden="true" />
+                        ) : (
+                          <Minus className="size-4" aria-hidden="true" />
+                        )}
+                      </button>
+                      <span className="flex items-center gap-1 font-mono text-sm font-bold text-foreground">
+                        <span className="text-xs font-normal text-muted-foreground">In Cart:</span>
+                        {cartQuantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => addItem(product, 1)}
+                        aria-label="Increase quantity"
+                        className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 active:scale-90 cursor-pointer"
+                      >
+                        <Plus className="size-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </TabsContent>
 
               <TabsContent value="inquiry" className="mt-4 flex flex-col gap-3">

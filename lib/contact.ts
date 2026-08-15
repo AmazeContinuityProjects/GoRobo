@@ -22,8 +22,8 @@ export function buildInquiryUrl(product: Product, extra?: { name?: string; qty?:
   if (extra?.note) lines.push(`• Note: ${extra.note}`)
   lines.push(
     "",
-    "Delivery: Buzz (instant, within 1 hr in Chennai) or Standard (1 day).",
-    "Please apply the flat 2% off offer.",
+    "Delivery: ⚡ Buzz Delivery (Express — Chennai Only) or Normal Delivery (Standard).",
+    "Please apply the flat 2% promo discount when generating the final official quote.",
     `Please share availability and details. (Ref email: ${CONTACT_EMAIL})`,
   )
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`
@@ -38,23 +38,50 @@ export function buildGeneralInquiryUrl(): string {
 
 export type CartLine = { product: Product; qty: number }
 
+export type CartInquiryOptions = {
+  deliveryMode?: "normal" | "buzz" | "bolt"
+  name?: string
+  phone?: string
+  mapsUrl?: string
+}
+
 // Pre-filled WhatsApp message for a whole cart order.
-export function buildCartInquiryUrl(lines: CartLine[]): string {
+export function buildCartInquiryUrl(
+  lines: CartLine[],
+  options?: "normal" | "buzz" | "bolt" | CartInquiryOptions,
+): string {
+  const opts: CartInquiryOptions =
+    typeof options === "string" ? { deliveryMode: options } : options || {}
+  const deliveryMode = opts.deliveryMode ?? "normal"
+
   const itemLines = lines.map(
     ({ product, qty }) =>
       `• ${product.name} × ${qty} — ${formatINR(product.price)} each (${formatINR(product.price * qty)})`,
   )
   const total = lines.reduce((sum, { product, qty }) => sum + product.price * qty, 0)
-  const text = [
-    "Hi Go RoBo, I'd like to order:",
+  const deliveryText =
+    deliveryMode === "buzz" || deliveryMode === "bolt"
+      ? "• Delivery: ⚡ Buzz Delivery (Express — Chennai Only, extra delivery charges apply)"
+      : "• Delivery: Normal Delivery (Standard 1-2 days)"
+
+  const textLines = [
+    "Hi Go RoBo, I'd like to place an order:",
     "",
     ...itemLines,
     "",
     `Total: ${formatINR(total)} (excl. tax)`,
+    deliveryText,
+  ]
+
+  if (opts.name) textLines.push(`• Customer: ${opts.name}`)
+  if (opts.phone) textLines.push(`• Phone: ${opts.phone}`)
+  if (opts.mapsUrl) textLines.push(`• Location Link: ${opts.mapsUrl}`)
+
+  textLines.push(
     "",
-    "Delivery: Buzz (instant, within 1 hr in Chennai) or Standard (1 day).",
-    "Please apply the flat 2% off offer.",
+    "Please apply the flat 2% promo discount when generating the final official quote.",
     `Please share availability and details. (Ref email: ${CONTACT_EMAIL})`,
-  ].join("\n")
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
+  )
+
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(textLines.join("\n"))}`
 }

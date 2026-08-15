@@ -2,31 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { ShoppingCart } from "lucide-react"
-import { Button } from "@amazecontinuityprojects/amazeui"
 import { useCart } from "@/components/cart-context"
-
-export function CartButton() {
-  const router = useRouter()
-  const { count } = useCart()
-
-  return (
-    <Button
-      variant="outline"
-      size="icon-sm"
-      className="relative"
-      aria-label={count > 0 ? `Open cart, ${count} items` : "Open cart"}
-      title="Cart"
-      onClick={() => router.push("/cart")}
-    >
-      <ShoppingCart className="size-4" aria-hidden="true" />
-      {count > 0 && (
-        <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
-          {count > 99 ? "99+" : count}
-        </span>
-      )}
-    </Button>
-  )
-}
 
 export function FloatingCartButton() {
   const router = useRouter()

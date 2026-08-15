@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -7,7 +7,6 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-  Cpu,
   GitFork,
   Heart,
   History,
@@ -41,8 +40,9 @@ import { ProductCard } from "@/components/product-card"
 import { ProductDialog } from "@/components/product-dialog"
 import { ResponsiveButton } from "@/components/responsive-button"
 import { ThemeSwitcher } from "@/components/theme-switcher"
-import { CartButton } from "@/components/cart-button"
+import { CartButton, FloatingCartButton } from "@/components/cart-button"
 import { PromoStrip } from "@/components/promo-strip"
+import { GoRoboLogo } from "@/components/gorobo-logo"
 import { useCatalog } from "@/components/catalog-context"
 import { type Product } from "@/lib/products"
 import { CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_CHANNEL_URL, buildGeneralInquiryUrl } from "@/lib/contact"
@@ -134,18 +134,14 @@ export function Catalog() {
       <header className="bg-background">
         <div className="flex flex-col gap-4 px-4 pt-2 pb-4 sm:px-6 sm:mr-8">
           <PageHeader
-            icon={
-              <IconBadge color="emerald" size="md">
-                <Cpu className="size-5" aria-hidden="true" />
-              </IconBadge>
-            }
-            title="Go RoBo"
+            icon={<GoRoboLogo className="h-7 w-auto" />}
+            title=""
             meta={
               <div className="flex items-center gap-2">
                 <Badge variant="info" size="sm">
                   {items.length} components
                 </Badge>
-                <Badge variant="purple" size="sm">
+                <Badge variant="purple" size="sm" className="hidden sm:inline-flex">
                   {itemCategories.length} categories
                 </Badge>
                 <span className="hidden text-sm text-muted-foreground sm:inline">
@@ -188,24 +184,20 @@ export function Catalog() {
       </header>
 
       <main className="px-4 pt-0 pb-6 sm:px-6 sm:mr-8">
-        <PromoStrip />
-
         <SectionHeader
           title="Browse Components"
           subtitle="Filter, sort and inquire about any part"
-          action={
-            <ViewModeToggle
-              value={view}
-              onChange={(k) => setView(k as "grid" | "list")}
-              options={[
-                { key: "grid", icon: <LayoutGrid className="size-4" />, label: "Grid" },
-                { key: "list", icon: <List className="size-4" />, label: "List" },
-              ]}
-            />
-          }
         />
 
         <div className="mt-4 flex items-center gap-2">
+          <ViewModeToggle
+            value={view}
+            onChange={(k) => setView(k as "grid" | "list")}
+            options={[
+              { key: "grid", icon: <LayoutGrid className="size-4" />, label: "Grid" },
+              { key: "list", icon: <List className="size-4" />, label: "List" },
+            ]}
+          />
           <div className="min-w-0 flex-1">
             <SearchInput
               type="search"
@@ -282,27 +274,11 @@ export function Catalog() {
           </FilterMenu>
         </div>
 
-        {/*
-          Mobile-only category chips (disabled: the category filter icon in the
-          search row covers filtering on every platform).
-        <nav aria-label="Filter by category" className="mt-5 flex flex-wrap gap-2 md:hidden">
-          <CategoryChip
-            active={activeCategory === null}
-            onClick={() => setActiveCategory(null)}
-            label="All"
-            count={items.length}
-          />
-          {itemCategories.map((category) => (
-            <CategoryChip
-              key={category}
-              active={activeCategory === category}
-              onClick={() => setActiveCategory(category)}
-              label={category}
-              count={countFor(category)}
-            />
-          ))}
-        </nav>
-        */}
+        {query.trim() === "" && (
+          <div className="mt-4">
+            <PromoStrip />
+          </div>
+        )}
 
         <div className="my-5 h-px bg-border" role="separator" />
 
@@ -409,6 +385,8 @@ export function Catalog() {
         </View>
       </main>
 
+      <FloatingCartButton />
+
       <FabSpeedDial
         position="bottom-right"
         actions={[
@@ -422,7 +400,7 @@ export function Catalog() {
             icon: <Radio className="size-5" />,
             label: "Join Channel",
             onPress: () => window.open(WHATSAPP_CHANNEL_URL, "_blank", "noopener,noreferrer"),
-            variant: "success",
+            variant: "info",
           },
           {
             icon: <Mail className="size-5" />,
@@ -567,7 +545,7 @@ function EmptyStateBlock({ onReset }: { onReset: () => void }) {
   return (
     <EmptyState
       icon={
-        <IconBadge color="pink" size="lg">
+        <IconBadge color="pink" size="md">
           <SearchX className="size-6" aria-hidden="true" />
         </IconBadge>
       }

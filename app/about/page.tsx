@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -68,8 +68,8 @@ export default function AboutPage() {
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         <View className="flex flex-col gap-6">
           <AboutSection
-            wordmarkLightSrc="/images/icons/wordmarkLight.svg"
-            wordmarkDarkSrc="/images/icons/wordmarkDark.svg"
+            wordmarkLightSrc="/gorobodark.svg"
+            wordmarkDarkSrc="/gorobolight.svg"
             tagline={SITE_TAGLINE}
             version={SITE_VERSION}
             buildNumber="2026.08"

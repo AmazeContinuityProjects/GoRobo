@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { CheckCircle2, MessageCircle, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react"
+import { CheckCircle2, MessageCircle, Minus, Plus, ShoppingBag, Trash2, Truck, Zap } from "lucide-react"
 import {
   Badge,
   Button,
@@ -26,6 +26,7 @@ export function CartPanel({ open, onOpenChange }: CartPanelProps) {
   const { lines, count, total, setQty, removeItem, clear } = useCart()
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
+  const [deliveryMode, setDeliveryMode] = useState<"normal" | "buzz">("normal")
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle")
   const [error, setError] = useState("")
 
@@ -47,8 +48,9 @@ export function CartPanel({ open, onOpenChange }: CartPanelProps) {
         name: name.trim(),
         phone: digits,
         items: lines.map((l) => ({ itemId: l.product.id, quantity: l.qty })),
+        deliveryMode,
       })
-      window.open(buildCartInquiryUrl(lines), "_blank", "noopener,noreferrer")
+      window.open(buildCartInquiryUrl(lines, deliveryMode), "_blank", "noopener,noreferrer")
       clear()
       setStatus("done")
     } catch (err) {
@@ -160,11 +162,77 @@ export function CartPanel({ open, onOpenChange }: CartPanelProps) {
                 </Text>
               </View>
               <Badge variant="success" size="sm" className="self-start">
-                Flat 2% off applied at checkout
+                Flat 2% promo applied on final quote
               </Badge>
               <Text className="text-xs text-muted-foreground">
-                Prices exclude GST &mdash; the final invoice adds applicable tax.
+                Prices exclude GST &mdash; the flat 2% promo discount and applicable taxes will be applied when the final official quote is sent.
               </Text>
+
+              {/* Delivery Mode Selection */}
+              <div className="flex flex-col gap-2 rounded-xl border border-border/80 bg-secondary/30 p-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-foreground">Delivery Option</Label>
+                  {deliveryMode === "buzz" && (
+                    <Badge variant="warning" size="sm" className="gap-1">
+                      <Zap className="size-3 fill-amber-500 text-amber-500" />
+                      Chennai Only
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryMode("normal")}
+                    className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-all cursor-pointer ${
+                      deliveryMode === "normal"
+                        ? "border-primary bg-primary/10 text-primary shadow-xs dark:bg-primary/15"
+                        : "border-border bg-card text-foreground hover:bg-muted/60"
+                    }`}
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs font-bold">
+                        <Truck className="size-3.5" aria-hidden="true" />
+                        Normal Delivery
+                      </span>
+                      <Badge variant="default" size="sm">
+                        1&ndash;2 Days
+                      </Badge>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">Standard fulfillment timeline</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryMode("buzz")}
+                    className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-all cursor-pointer ${
+                      deliveryMode === "buzz"
+                        ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-xs dark:bg-amber-500/15"
+                        : "border-border bg-card text-foreground hover:bg-muted/60"
+                    }`}
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs font-bold">
+                        <Zap className="size-3.5 fill-amber-500 text-amber-500" aria-hidden="true" />
+                        Buzz Delivery
+                      </span>
+                      <Badge variant="warning" size="sm">
+                        ⚡ Chennai Only
+                      </Badge>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">Express priority dispatch within Chennai</span>
+                  </button>
+                </div>
+
+                {deliveryMode === "buzz" && (
+                  <div className="flex items-start gap-1.5 rounded-md bg-amber-500/10 p-2 text-[11px] leading-tight text-amber-700 dark:text-amber-300">
+                    <Zap className="mt-0.5 size-3 shrink-0 fill-amber-500 text-amber-500" aria-hidden="true" />
+                    <span>
+                      <strong>⚡ Buzz Delivery (Chennai Only):</strong> Fast priority dispatch available exclusively within Chennai. Extra delivery fees apply.
+                    </span>
+                  </div>
+                )}
+              </div>
 
               <div className="mt-1 grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">

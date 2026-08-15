@@ -19,6 +19,8 @@ export type PlaceOrderInput = {
   name: string
   phone: string
   items: OrderItemInput[]
+  deliveryMode?: "normal" | "buzz" | "bolt"
+  mapsUrl?: string
 }
 
 export type PlacedOrder = {
@@ -27,6 +29,8 @@ export type PlacedOrder = {
   phone_number: string
   items: OrderItemInput[]
   total: number
+  delivery_mode?: string
+  maps_url?: string
   created_at: string
 }
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { Eye, ShoppingCart } from "lucide-react"
+import { Eye, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react"
 import {
   Badge,
   Button,
@@ -21,7 +21,9 @@ type ProductCardProps = {
 }
 
 export function ProductCard({ product, view = "grid", onView }: ProductCardProps) {
-  const { addItem } = useCart()
+  const { items, addItem, setQty, removeItem } = useCart()
+  const cartItem = items.find((i) => i.productId === product.id)
+  const quantity = cartItem?.qty ?? 0
 
   if (view === "list") {
     return (
@@ -34,18 +36,20 @@ export function ProductCard({ product, view = "grid", onView }: ProductCardProps
             className="size-full object-contain"
           />
         </div>
-        <div className="flex flex-1 flex-col gap-2 p-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-1 flex-col gap-1.5 p-4">
+          <div>
             <Badge variant="default" size="sm">
               {product.category}
-            </Badge>
-            <Badge variant={product.inStock ? "success" : "danger"} size="sm">
-              {product.inStock ? "In Stock" : "Out of Stock"}
             </Badge>
           </div>
           <CardTitle className="text-pretty text-sm font-medium leading-relaxed">
             {product.name}
           </CardTitle>
+          <div>
+            <Badge variant={product.inStock ? "success" : "danger"} size="sm">
+              {product.inStock ? "In Stock" : "Out of Stock"}
+            </Badge>
+          </div>
           <div className="mt-auto flex items-end justify-between gap-3 pt-2">
             <div>
               <p className="font-mono text-lg font-semibold text-card-foreground">
@@ -54,18 +58,61 @@ export function ProductCard({ product, view = "grid", onView }: ProductCardProps
               <p className="text-xs text-muted-foreground">excl. tax</p>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon-sm" onClick={() => onView?.(product)} aria-label={`Quick view ${product.name}`}>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                onClick={() => onView?.(product)}
+                aria-label={`Quick view ${product.name}`}
+              >
                 <Eye className="size-4" aria-hidden="true" />
               </Button>
-<ResponsiveButton
-                icon={<ShoppingCart className="size-4 shrink-0" aria-hidden="true" />}
-                label="Add to Cart"
-                disabled={!product.inStock}
-                onClick={() => addItem(product)}
-                collapseBelow="sm"
-                className="w-full"
-                variant="primary"
-              />
+              {quantity === 0 ? (
+                <ResponsiveButton
+                  icon={<ShoppingCart className="size-4 shrink-0" aria-hidden="true" />}
+                  label={product.inStock ? "Add to Cart" : "Out of Stock"}
+                  disabled={!product.inStock}
+                  onClick={() => addItem(product)}
+                  collapseBelow="sm"
+                  className="w-full sm:w-auto"
+                  variant="primary"
+                />
+              ) : (
+                <div className="flex h-8 min-w-[110px] sm:min-w-[124px] items-center justify-between rounded-xl border border-primary/30 bg-primary/10 px-1 py-0.5 text-primary shadow-xs dark:bg-primary/15 dark:border-primary/40">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (quantity === 1) removeItem(product.id)
+                      else setQty(product.id, quantity - 1)
+                    }}
+                    aria-label={`Decrease quantity of ${product.name}`}
+                    className="flex size-6 items-center justify-center rounded-lg bg-background text-foreground shadow-xs transition-colors hover:bg-muted active:scale-90 cursor-pointer"
+                  >
+                    {quantity === 1 ? (
+                      <Trash2 className="size-3 text-destructive" aria-hidden="true" />
+                    ) : (
+                      <Minus className="size-3" aria-hidden="true" />
+                    )}
+                  </button>
+
+                  <span className="flex items-center gap-1 font-mono text-xs sm:text-sm font-bold text-foreground">
+                    <span className="hidden sm:inline text-xs font-normal text-muted-foreground">Qty:</span>
+                    {quantity}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      addItem(product, 1)
+                    }}
+                    aria-label={`Increase quantity of ${product.name}`}
+                    className="flex size-6 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 active:scale-90 cursor-pointer"
+                  >
+                    <Plus className="size-3" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -119,15 +166,56 @@ export function ProductCard({ product, view = "grid", onView }: ProductCardProps
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-<ResponsiveButton
-                icon={<ShoppingCart className="size-4 shrink-0" aria-hidden="true" />}
-                label={product.inStock ? "Add to Cart" : "Out of Stock"}
-                disabled={!product.inStock}
-                onClick={() => addItem(product)}
-                collapseBelow="sm"
-                className="w-full"
-                variant="primary"
-              />
+        {quantity === 0 ? (
+          <ResponsiveButton
+            icon={<ShoppingCart className="size-4 shrink-0" aria-hidden="true" />}
+            label={product.inStock ? "Add to Cart" : "Out of Stock"}
+            disabled={!product.inStock}
+            onClick={() => addItem(product)}
+            collapseBelow="sm"
+            className="w-full"
+            variant="primary"
+          />
+        ) : (
+          <div className="flex h-9 w-full items-center justify-between rounded-xl border border-primary/30 bg-primary/10 px-1 py-1 text-primary shadow-xs dark:bg-primary/15 dark:border-primary/40">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (quantity === 1) {
+                  removeItem(product.id)
+                } else {
+                  setQty(product.id, quantity - 1)
+                }
+              }}
+              aria-label={`Decrease quantity of ${product.name}`}
+              className="flex size-7 items-center justify-center rounded-lg bg-background text-foreground shadow-xs transition-colors hover:bg-muted active:scale-90 cursor-pointer"
+            >
+              {quantity === 1 ? (
+                <Trash2 className="size-3.5 text-destructive" aria-hidden="true" />
+              ) : (
+                <Minus className="size-3.5" aria-hidden="true" />
+              )}
+            </button>
+
+            <span className="flex items-center gap-1 font-mono text-sm font-bold text-foreground">
+              <span className="text-xs font-normal text-muted-foreground">Qty:</span>
+              {quantity}
+            </span>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                addItem(product, 1)
+              }}
+              aria-label={`Increase quantity of ${product.name}`}
+              className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 active:scale-90 cursor-pointer"
+            >
+              <Plus className="size-3.5" aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   )
