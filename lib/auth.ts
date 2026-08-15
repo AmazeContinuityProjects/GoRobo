@@ -37,11 +37,14 @@ export const auth = betterAuth({
   ...(process.env.NODE_ENV === 'development'
     ? {
         advanced: {
-          // In dev (v0 preview iframe), force cross-site cookies so the
-          // session cookie is stored by the browser.
+          // In dev (v0 preview iframe), the app runs in a cross-site iframe.
+          // Chrome blocks third-party cookies by default, so the session
+          // cookie must be SameSite=None, Secure AND Partitioned (CHIPS) for
+          // the browser to store and send it back inside the iframe.
           defaultCookieAttributes: {
             sameSite: 'none' as const,
             secure: true,
+            partitioned: true,
           },
         },
       }
