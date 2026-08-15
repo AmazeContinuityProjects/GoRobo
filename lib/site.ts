@@ -7,6 +7,10 @@ export const SITE_VERSION = "0.2.0"
 export const SITE_PLATFORM = "Web App"
 export const SITE_LAST_UPDATED = "August 2026"
 
+// Feature Toggles:
+// Set to true when you want to show that Buzz (Express) delivery has extra charges on the storefront.
+export const SHOW_BUZZ_EXTRA_CHARGES = false
+
 // Amaze Continuity Projects — the organisation behind the amazeui design
 // system and the sponsor that keeps Go RoBo open source.
 export const AMAZE_CP_NAME = "Amaze Continuity Projects"

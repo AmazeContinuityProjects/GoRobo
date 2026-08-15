@@ -1,4 +1,5 @@
 import { formatINR, type Product } from "@/lib/products"
+import { SHOW_BUZZ_EXTRA_CHARGES } from "@/lib/site"
 
 // Go RoBo contact details
 // WhatsApp number in international format (91 = India), digits only, no "+"
@@ -61,7 +62,7 @@ export function buildCartInquiryUrl(
   const total = lines.reduce((sum, { product, qty }) => sum + product.price * qty, 0)
   const deliveryText =
     deliveryMode === "buzz" || deliveryMode === "bolt"
-      ? "• Delivery: ⚡ Buzz Delivery (Express — Chennai Only, extra delivery charges apply)"
+      ? `• Delivery: ⚡ Buzz Delivery (Express — Chennai Only${SHOW_BUZZ_EXTRA_CHARGES ? ", extra delivery charges apply" : ""})`
       : "• Delivery: Normal Delivery (Standard 1-2 days)"
 
   const textLines = [

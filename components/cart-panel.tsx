@@ -15,6 +15,7 @@ import {
 import { formatINR } from "@/lib/products"
 import { buildCartInquiryUrl } from "@/lib/contact"
 import { placeOrder } from "@/lib/gorobo-api"
+import { SHOW_BUZZ_EXTRA_CHARGES } from "@/lib/site"
 import { useCart } from "@/components/cart-context"
 
 type CartPanelProps = {
@@ -228,7 +229,7 @@ export function CartPanel({ open, onOpenChange }: CartPanelProps) {
                   <div className="flex items-start gap-1.5 rounded-md bg-amber-500/10 p-2 text-[11px] leading-tight text-amber-700 dark:text-amber-300">
                     <Zap className="mt-0.5 size-3 shrink-0 fill-amber-500 text-amber-500" aria-hidden="true" />
                     <span>
-                      <strong>⚡ Buzz Delivery (Chennai Only):</strong> Fast priority dispatch available exclusively within Chennai. Extra delivery fees apply.
+                      <strong>⚡ Buzz Delivery (Chennai Only):</strong> Fast priority dispatch available exclusively within Chennai.{SHOW_BUZZ_EXTRA_CHARGES ? " Extra delivery fees apply." : ""}
                     </span>
                   </div>
                 )}

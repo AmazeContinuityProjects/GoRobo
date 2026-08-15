@@ -50,7 +50,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher"
 import { GoRoboLogo } from "@/components/gorobo-logo"
 import { ResponsiveButton } from "@/components/responsive-button"
 import { CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_CHANNEL_URL } from "@/lib/contact"
-import { GITHUB_REPO_URL } from "@/lib/site"
+import { GITHUB_REPO_URL, SHOW_BUZZ_EXTRA_CHARGES } from "@/lib/site"
 
 const CUSTOMER_STORAGE_KEY = "gorobo-customer-details"
 
@@ -441,13 +441,13 @@ export default function CartPage() {
                       </Badge>
                     </div>
                     <Text className="pl-6.5 text-xs text-muted-foreground">
-                      Express priority dispatch available exclusively within Chennai. Extra delivery charges apply.
+                      Express priority dispatch available exclusively within Chennai.{SHOW_BUZZ_EXTRA_CHARGES ? " Extra delivery charges apply." : ""}
                     </Text>
                   </div>
 
                   {deliveryMode === "buzz" && (
                     <Alert variant="warning" className="text-xs">
-                      <strong>⚡ Buzz Delivery (Chennai Only):</strong> Fast priority dispatch available exclusively within Chennai. Extra delivery fees apply based on location and courier rates.
+                      <strong>⚡ Buzz Delivery (Chennai Only):</strong> Fast priority dispatch available exclusively within Chennai.{SHOW_BUZZ_EXTRA_CHARGES ? " Extra delivery fees apply based on location and courier rates." : ""}
                     </Alert>
                   )}
                 </CardContent>
