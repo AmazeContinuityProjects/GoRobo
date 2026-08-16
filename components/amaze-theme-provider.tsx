@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect } from "react"
-import { ThemeProvider, useColorPalette } from "@amazecontinuityprojects/amazeui"
+import { useEffect, useRef } from "react"
+import { ThemeProvider, useColorPalette, useTheme } from "@amazecontinuityprojects/amazeui"
 
 function PaletteInitializer() {
   const { setPaletteId } = useColorPalette()
@@ -21,6 +21,23 @@ function PaletteInitializer() {
   return null
 }
 
+function PaletteSyncer() {
+  const { theme } = useTheme()
+  const { paletteId, setPaletteId } = useColorPalette()
+  const paletteRef = useRef(paletteId)
+  paletteRef.current = paletteId
+
+  useEffect(() => {
+    const id = paletteRef.current
+    if (id === "default") return
+    setPaletteId("default")
+    const raf = requestAnimationFrame(() => setPaletteId(id))
+    return () => cancelAnimationFrame(raf)
+  }, [theme, setPaletteId])
+
+  return null
+}
+
 export function AmazeThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
@@ -31,6 +48,7 @@ export function AmazeThemeProvider({ children }: { children: React.ReactNode }) 
       value={{ light: "light", dark: "dark" }}
     >
       <PaletteInitializer />
+      <PaletteSyncer />
       {children}
     </ThemeProvider>
   )
