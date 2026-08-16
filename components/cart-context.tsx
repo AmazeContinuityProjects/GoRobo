@@ -6,7 +6,7 @@ import { products, type Product } from "@/lib/products"
 export type CartItem = { productId: string; qty: number }
 export type CartLine = { product: Product; qty: number }
 
-const STORAGE_KEY = "gorobo-cart"
+const STORAGE_KEY = "gorobo-cart-v2"
 
 type CartContextValue = {
   items: CartItem[]

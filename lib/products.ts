@@ -29,16 +29,6 @@ export function applyMargin(basePrice: number): number {
   return basePrice + margin
 }
 
-export function slugify(name: string): string {
-  return name
-    .replace(/&#215;/g, "x")
-    .replace(/&amp;/g, "&")
-    .replace(/&mdash;/g, "-")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-}
-
 const raw: Array<Omit<Product, "id" | "price" | "inStock"> & { price?: number; inStock?: boolean }> = [
   // Accesories & Cables
   { name: "60W soldering iron with temperature control", category: "Accesories & Cables", description: "Soldering iron for assembling and repairing electronics.", price: 280, image: "/images/products/60w-soldering-iron-with-temperature-control.png" },
@@ -374,8 +364,8 @@ const raw: Array<Omit<Product, "id" | "price" | "inStock"> & { price?: number; i
   { name: "TIP122 NPN Power Transistor", category: "Transistors & IC", description: "Transistor for switching and amplification.", price: 14, image: "/images/products/tip122-npn-power-transistor.png" },
 ]
 
-export const products: Product[] = raw.map((p) => ({
-  id: slugify(p.name),
+export const products: Product[] = raw.map((p, i) => ({
+  id: String(i + 1),
   name: p.name,
   category: p.category,
   description: p.description,
